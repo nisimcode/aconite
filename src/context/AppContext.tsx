@@ -1,19 +1,20 @@
-import { createContext, useEffect, useState } from 'react';
+import { createContext, useEffect, useRef, useState } from 'react';
 import Tests from '../lib/Tests';
 import getRandomInt from '../lib/getRandomInt';
 import shuffleArray from '../lib/shuffleArray';
 
-const INITIAL_POINTS_REMAINING: number = 100;
-const INITIAL_POINTS_EARNED: number = 0;
+const POINTS_PER_QUESTION: number = 100;
 const INITIAL_TIME_REMAINING: number = 10;
-const POINTS_TO_DETUCT = 40;
+// const STREAK_FACTOR: number = 2;
 
 interface AppContextType {
-    pointsRemaining: number;
+    streak: number;
     pointsEarned: number;
+    pointsTotal: number;
     timeRemaining: number;
     roundIsEnded: boolean;
     roundNumber: number;
+    que: boolean;
     currentTest: {
         id: number;
         question: string;
@@ -23,18 +24,20 @@ interface AppContextType {
         }[];
         answer: string;
     };
-    // updatePointsEarned: (amount: number) => void;
-    // resetRemaining: () => void;
-    deductPointsRemaining: () => void;
-    // newRoundHandler: () => void;
-    roundEnder: (amount: number) => void;
-    testUpdater: () => void;
+    roundEnder: (correct: boolean) => void;
+    // testUpdater: () => void;
+    queSetter: () => void;
+    calculatePointsTotal: (correct: boolean) => void;
+    calculateStreak: (correct: boolean) => void;
+    testsHandler: () => void;
 }
 
 const initialAppContext: AppContextType = {
-    pointsRemaining: INITIAL_POINTS_REMAINING,
-    pointsEarned: INITIAL_POINTS_EARNED,
+    streak: 0,
+    pointsTotal: 0,
     timeRemaining: INITIAL_TIME_REMAINING,
+    que: false,
+    pointsEarned: 0,
     roundIsEnded: true,
     roundNumber: 0,
     currentTest: {
@@ -43,39 +46,58 @@ const initialAppContext: AppContextType = {
         options: [],
         answer: '',
     },
-    // updatePointsEarned: () => {},
-    // resetRemaining: () => {},
-    deductPointsRemaining: () => {},
-    // newRoundHandler: () => {},
     roundEnder: () => {},
-    testUpdater: () => {},
+    // testUpdater: () => {},
+    queSetter: () => {},
+    calculatePointsTotal: () => {},
+    calculateStreak: () => {},
+    testsHandler: () => {},
 };
 
 const AppContext = createContext<AppContextType>(initialAppContext);
 
 const AppProvider = ({ children }: { children: React.ReactNode }) => {
-    const [pointsEarned, setPointsEarned] = useState<number>(
-        INITIAL_POINTS_EARNED
-    );
-    const [pointsRemaining, setPointsRemaining] = useState<number>(
-        INITIAL_POINTS_REMAINING
-    );
+    const [que, setQue] = useState<boolean>(false);
+    const [pointsEarned, setPointsEarned] = useState<number>(0);
+    // const [pointsTotal, setPointsTotal] = useState<number>(0);
+    const pointsTotal = useRef<number>(0);
     const [timeRemaining, setTimeRemaining] = useState<number>(
         INITIAL_TIME_REMAINING
     );
+    // const [streak, setStreak] = useState<number>(0);
+    const streak = useRef<number>(0);
     const [roundIsEnded, setRoundIsEnded] = useState<boolean>(false);
-    const [roundNumber, setRoundNumber] = useState<number>(0);
-    const [currentTest, setCurrentTest] = useState<AppContextType['currentTest']>({
+    const [roundNumber, setRoundNumber] = useState<number>(1);
+    const [currentTest, setCurrentTest] = useState<
+        AppContextType['currentTest']
+    >({
         id: -1,
         question: '',
         options: [],
         answer: '',
     });
 
+    const [tests, setTests] = useState<object[]>(Tests);
+
+    const testsHandler = () => {
+        try {
+            let test = tests[getRandomInt(tests.length)];
+            let newTests = tests.filter((t: object) => t !== test);
+            setTests(newTests);
+            console.log(newTests.length);
+            let clone = JSON.parse(JSON.stringify(test));
+            let shuffledArray = shuffleArray(clone.options);
+            clone.options = shuffledArray;
+            console.log('chosen: ', clone.answer);
+            setCurrentTest(clone);
+        } catch (error) {
+            console.log('Error retrieving or storing items:', error);
+        }
+    };
+
     useEffect(() => {
         const timer: NodeJS.Timeout = setInterval(() => {
             decreaseTimeRemaining();
-            // decreasePointsRemaining();
         }, 1000);
 
         const decreaseTimeRemaining = () => {
@@ -89,17 +111,6 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
             });
         };
 
-        // const decreasePointsRemaining = () => {
-        //     setPointsRemaining((previous: number) => {
-        //         const next = previous - INITIAL_POINTS_REMAINING / INITIAL_TIME_REMAINING;
-        //         if (next === 0) {
-        //             setRoundIsEnded(true);
-        //             clearInterval(timer);
-        //         }
-        //         return next;
-        //     });
-        // };
-
         return () => {
             if (timer) {
                 clearInterval(timer);
@@ -107,63 +118,97 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
         };
     }, [roundNumber]);
 
-    // const newRoundHandler = () => {
-    // setRoundIsEnded(false);
-    // setRoundNumber((previous) => previous + 1);
-    // };
+    useEffect(() => {
+        calculatePointsTotal;
+    }, [roundNumber]);
 
-    const testUpdater = () => {
-        let test = Tests[getRandomInt(Tests.length)];
-        let clone = JSON.parse(JSON.stringify(test));
-        let shuffledArray = shuffleArray(clone.options);
-        clone.options = shuffledArray;
-        setCurrentTest(clone);
+    const queSetter = () => {
+        setQue(true);
     };
 
-    const roundEnder = (points: number) => {
-        setRoundIsEnded(true);
-        setPointsEarned((prevPoints) => prevPoints + points);
-        setPointsRemaining(INITIAL_POINTS_REMAINING);
-        setTimeRemaining(INITIAL_TIME_REMAINING);
-        setRoundNumber((previous) => previous + 1);
-        testUpdater();
-        // setRoundIsEnded(false);
+    const roundEnder = (isCorrect: boolean) => {
+        if (timeRemaining > 0) {
+            setQue(false);
+            setRoundIsEnded(true);
+            calculateStreak(isCorrect);
+            calculatePointsTotal(isCorrect);
+            setRoundNumber((previous) => previous + 1);
+        }
     };
 
-    // const updatePointsEarned = (amount: number) => {
-    // setPointsEarned((prevPoints) => prevPoints + amount);
-    // };
-
-    // const resetRemaining = () => {
-    // setPointsRemaining(INITIAL_POINTS_REMAINING);
-    // setTimeRemaining(INITIAL_TIME_REMAINING);
-    // };
-
-    const deductPointsRemaining = () => {
-        setPointsRemaining((prevPoints) => {
-            if (prevPoints - POINTS_TO_DETUCT < 0) {
-                return 0;
-            }
-            return prevPoints - POINTS_TO_DETUCT;
-        });
+    const calculateStreak = (isCorrect: boolean) => {
+        if (isCorrect) {
+            streak.current += 1;
+        } else {
+            streak.current = 0;
+        }
     };
+
+    // const calculateStreak = (isCorrect: boolean) => {
+    //     if (isCorrect) {
+    //         setStreak((previous) => previous + 1);
+    //     } else {
+    //         setStreak(0);
+    //     }
+    // };
+
+
+    // const calculatePointsTotal = (isCorrect: boolean) => {
+    //     setPointsTotal((prev) =>
+    //         isCorrect ? prev + streak.current * POINTS_PER_QUESTION : prev
+    //     );
+    // };
+
+    const calculatePointsTotal = (isCorrect: boolean) => {
+        if (isCorrect) {
+            pointsTotal.current += streak.current * POINTS_PER_QUESTION;
+        }
+    }
 
     const value: AppContextType = {
+        streak: streak.current,
         pointsEarned,
-        pointsRemaining,
+        pointsTotal: pointsTotal.current,
         timeRemaining,
         roundIsEnded,
         roundNumber,
+        que,
         currentTest,
-        // updatePointsEarned,
-        // resetRemaining,
-        deductPointsRemaining,
-        // newRoundHandler,
         roundEnder,
-        testUpdater,
+        queSetter,
+        calculatePointsTotal,
+        calculateStreak,
+        testsHandler,
     };
 
     return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
 
 export { AppContext, AppProvider };
+
+// const testsHandler = async () => {
+//     try {
+//         let jsonValue = await AsyncStorage.getItem('tests');
+//         if (!jsonValue) {
+//             jsonValue = JSON.stringify(Tests);
+//             await AsyncStorage.setItem('tests', jsonValue);
+//         }
+//         const tests = JSON.parse(jsonValue || '[]');
+//         let test = tests[getRandomInt(tests.length)];
+//         const newTests = tests.filter((t: object) => t !== test);
+//         const newTestJSON = JSON.stringify(newTests);
+//         await AsyncStorage.setItem('tests', newTestJSON);
+//         return test;
+//     } catch (error) {
+//         console.log('Error retrieving or storing items:', error);
+//     }
+// };
+
+// const testUpdater = () => {
+//     let test = testsHandler();
+//     let clone = JSON.parse(JSON.stringify(test));
+//     let shuffledArray = shuffleArray(clone.options);
+//     clone.options = shuffledArray;
+//     console.log("chosen: ", clone);
+//     setCurrentTest(clone);
+// };

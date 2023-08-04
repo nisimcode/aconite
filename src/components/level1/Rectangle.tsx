@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { AppContext } from '../../context/AppContext';
 import Colors from '../../lib/Colors';
@@ -9,6 +9,7 @@ interface CompProps {
     id: number;
     isAnswer: boolean;
     isCorrect: boolean;
+    isOpen: boolean;
 }
 
 const basePadding = 25;
@@ -19,42 +20,33 @@ export default function Rectangle({
     id,
     isAnswer,
     isCorrect,
+    isOpen,
 }: CompProps) {
-    const [used, setUsed] = useState(!isAnswer);
-    const [cleanColors, setCleanColors] = useState(false);
-    const {
-        pointsRemaining,
-        pointsEarned,
-        timeRemaining,
-        roundIsEnded,
-        // newRoundHandler,
-        // updatePointsEarned,
-        // resetRemaining,
-        deductPointsRemaining,
-        roundEnder,
-    } = useContext(AppContext);
+    const [used, setUsed] = useState(false);
+    const { pointsEarned, timeRemaining, roundNumber, roundEnder, queSetter } =
+        useContext(AppContext);
+
+    useEffect(() => {
+        setUsed(false);
+        backgroundColorPicker();
+    }, [roundNumber]);
+
+    
+    useEffect(() => {
+      if (timeRemaining === 0) {
+        roundEnder(false);
+      }
+    }, [timeRemaining]);
 
     const pressHandler = () => {
         setUsed(true);
-        if (isCorrect) {
-            // setUsed(false);
-            // updatePointsEarned(pointsRemaining);
-			roundEnder(pointsRemaining);
-			setUsed(false);
-
-            // resetRemaining();
-            // newRoundHandler();
-        } else {
-            if (!used) {
-                // setUsed(true);
-                deductPointsRemaining();
-            }
-        }
+        queSetter();
+        setTimeout(() => roundEnder(isCorrect), 1000);
     };
 
     const backgroundColorPicker = () => {
         if (!isAnswer) return styles.wrapperQuestion;
-        if (!used || roundIsEnded) return styles.wrapperNotUsed;
+        if (!used) return styles.wrapperNotUsed;
         if (isCorrect) return styles.wrapperUsedCorrect;
         return styles.wrapperUsedIncorrect;
     };
@@ -64,9 +56,9 @@ export default function Rectangle({
             <Pressable
                 onPress={pressHandler}
                 disabled={used}
-                style={[
+                style={({ pressed }) => [
                     {
-                        // backgroundColor: pressed ? 'lightyellow' : 'white',
+                        opacity: pressed ? 0.5 : 1,
                         flex: 1,
                         padding: basePadding * size,
                     },

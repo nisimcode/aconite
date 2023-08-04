@@ -1,22 +1,20 @@
 import { StyleSheet, View } from 'react-native';
 import Rectangle from '../level1/Rectangle';
-import { AppContext } from '../../context/AppContext';
-import {useContext} from 'react'
 
-// interface CompProps {
-//   id: number;
-//   question: string;
-// }
+interface CompProps {
+  id: number;
+  question: string;
+}
 
-export default function Question() {
-  const { currentTest } = useContext(AppContext);
+export default function Question({ id, question }: CompProps) {
   return (
     <View>
       <Rectangle
         isAnswer={false}
         isCorrect={false}
-        text={currentTest.question}
-        id={currentTest.id}
+        isOpen={true}
+        text={question}
+        id={id}
         size={2}
       />
     </View>

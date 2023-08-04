@@ -3,13 +3,23 @@ import { StyleSheet, Text, View } from 'react-native';
 import { AppContext } from '../../context/AppContext';
 
 export default function Points() {
-  const { pointsEarned } = useContext(AppContext);
+    const { pointsTotal} = useContext(AppContext);
 
-  return (
-    <View>
-      <Text>Points Earned: {pointsEarned}</Text>
-    </View>
-  )
+    // const showCurrentOrTotalPoints = () => {
+    //     if (que) {
+    //         return (
+    //             <Text style={{ color: pointsEarned === 0 ? 'red' : 'green' }}>+ {pointsEarned} points</Text>
+    //         );
+    //     }
+    //     return <Text>Total Points: {pointsTotal}</Text>;
+    // };
+
+    return (
+        <Text>
+            Total Points: {pointsTotal}
+        </Text>
+    );
+    
 }
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({});

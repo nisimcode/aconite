@@ -6,7 +6,7 @@ export default function Buttons() {
   const {roundNumber} = useContext(AppContext)
   return (
     <View style={styles.container}>
-      <Text>{roundNumber}</Text>
+      <Text>***Buttons***</Text>
     </View>
   )
 }
@@ -14,9 +14,14 @@ export default function Buttons() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // bottom: 0,
     backgroundColor: 'lightblue',
     alignItems: 'center',
     justifyContent: 'center',
+    height: 50,
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+
+
   },
 })

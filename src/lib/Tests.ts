@@ -160,6 +160,77 @@ const Tests = [
         ],
         answer: 'Ankara',
     },
+    {
+        id: 7,
+        question: 'What is the capital of Austria?',
+        options: [
+            {
+                id: 0,
+                text: 'Vienna',
+            },
+            {
+                id: 1,
+                text: 'Salzburg',
+            },
+            {
+                id: 2,
+                text: 'Innsbruck',
+            },
+            {
+                id: 3,
+                text: 'Graz'
+            }
+        ],
+        answer: 'Vienna',
+    },
+    {
+        id: 8,
+        question: 'What is the capital of Hungary?',    
+        options: [
+            {
+                id: 0,
+                text: 'Budapest',
+            },
+            {
+                id: 1,
+                text: 'Szeged',
+            },
+            {
+                id: 2,
+                text: 'Debrecen'
+            },
+            {
+                id: 3,
+                text: 'Pecs'
+            }
+        ],
+        answer: 'Budapest',
+    },
+    {
+        id: 9,
+        question: 'What is the capital of Australia?',
+        options: [
+            {
+                id: 0,
+                text: 'Sydney',
+            },
+            {
+                id: 1,
+                text: 'Melbourne',
+            },
+            {
+                id: 2,
+                text: 'Perth',
+            },
+            {
+                id: 3,
+                text: 'Canberra',
+            }
+        ],
+        answer: 'Canberra',
+    }
 ];
 
+
 export default Tests;
+
