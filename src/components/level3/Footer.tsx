@@ -1,12 +1,9 @@
 import { StyleSheet, Text, View } from 'react-native'
-import { useContext } from 'react'
-import { AppContext } from '../../context/AppContext'
 
-export default function Buttons() {
-  const {roundNumber} = useContext(AppContext)
+export default function Footer() {
   return (
     <View style={styles.container}>
-      <Text>***Buttons***</Text>
+      <Text>***Footer***</Text>
     </View>
   )
 }
@@ -21,7 +18,5 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     width: '100%',
-
-
   },
 })

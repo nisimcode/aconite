@@ -7,24 +7,6 @@ import Question from '../level2/Question';
 export default function Test() {
     const { roundNumber, currentTest, testsHandler } = useContext(AppContext);
     const [started, setStarted] = useState(false);
-    // const [optionsArray, setOptionsArray] = useState([
-    //     {
-    //         id: -1,
-    //         text: '',
-    //     },
-    //     {
-    //         id: -1,
-    //         text: '',
-    //     },
-    //     {
-    //         id: -1,
-    //         text: '',
-    //     },
-    //     {
-    //         id: -1,
-    //         text: '',
-    //     },
-    // ]);
 
     useEffect(() => {
         testsHandler();

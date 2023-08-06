@@ -17,13 +17,11 @@ const basePadding = 25;
 export default function Rectangle({
     text,
     size,
-    id,
     isAnswer,
     isCorrect,
-    isOpen,
 }: CompProps) {
     const [used, setUsed] = useState(false);
-    const { pointsEarned, timeRemaining, roundNumber, roundEnder, queSetter } =
+    const { timeRemaining, roundNumber, roundEnder, queSetter } =
         useContext(AppContext);
 
     useEffect(() => {
@@ -31,11 +29,10 @@ export default function Rectangle({
         backgroundColorPicker();
     }, [roundNumber]);
 
-    
     useEffect(() => {
-      if (timeRemaining === 0) {
-        roundEnder(false);
-      }
+        if (timeRemaining === 0) {
+            roundEnder(false);
+        }
     }, [timeRemaining]);
 
     const pressHandler = () => {
