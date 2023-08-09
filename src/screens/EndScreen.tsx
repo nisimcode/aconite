@@ -11,12 +11,12 @@ export default function EndScreen({ navigation }: StackScreenProps<any>) {
     };
     return (
         <View style={styles.container}>
-            <Text style={styles.text}>Game Over</Text>
+            <Text style={styles.gameOverText}>Game Over</Text>
             <Pressable
                 style={styles.button}
                 onPress={pressHandler}
             >
-                <Text style={styles.text}>Start New Game</Text>
+                <Text style={styles.newGameText}>Return to Start</Text>
             </Pressable>
         </View>
     );
@@ -27,15 +27,20 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
     },
-    text: {
+    gameOverText: {
         textAlign: 'center',
-        fontSize: 20,
+        fontSize: 60,
         color: 'red',
+    },
+    newGameText: {
+        textAlign: 'center',
+        fontSize: 30,
+        color: 'blue',
     },
     button: {
         backgroundColor: 'lightgray',
         padding: 10,
         borderColor: 'blue',
         borderRadius: 10,
-    }
+    },
 });

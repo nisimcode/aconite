@@ -98,12 +98,4 @@ const styles = StyleSheet.create({
     wrapperUsedIncorrect: {
         backgroundColor: Colors['light-red'],
     },
-
-    // logBox: {
-    //   padding: 20,
-    //   margin: 10,
-    //   borderWidth: StyleSheet.hairlineWidth,
-    //   borderColor: '#f0f0f0',
-    //   backgroundColor: '#f9f9f9',
-    // },
 });

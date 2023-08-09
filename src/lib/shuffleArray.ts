@@ -1,10 +1,9 @@
-export interface OptionParams {
+interface OptionParams {
   options: {
     id: number;
     text: string;
   }[];
 }
-
 
 export default function shuffleArray(array: OptionParams['options']) {;
   for (let i = array.length - 1; i > 0; i--) {

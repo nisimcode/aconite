@@ -1,18 +1,16 @@
 import { StackScreenProps } from '@react-navigation/stack';
 import { useContext, useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
-import Test from '../components/level3/Test';
+import { Alert, BackHandler, StyleSheet, View } from 'react-native';
 import Feedback from '../components/level3/Feedback';
+import Test from '../components/level3/Test';
 import { AppContext } from '../context/AppContext';
-import { BackHandler, Alert } from 'react-native';
-
 
 export default function GameScreen({ navigation }: StackScreenProps<any>) {
-    const { timeOut, startTimer } = useContext(AppContext);
+    const { timeOut, startTimer, noAmmo } = useContext(AppContext);
 
     const handleBackButton = () => {
         Alert.alert(
-            'Start a new game?',
+            'Return to Start?',
             '',
             [
                 {
@@ -46,11 +44,13 @@ export default function GameScreen({ navigation }: StackScreenProps<any>) {
 
     useEffect(() => {
         startTimer();
-    })
+    });
 
     useEffect(() => {
-        if (timeOut) navigation.navigate('EndScreen');
-    }, [timeOut]);
+        if (timeOut || noAmmo) {
+            navigation.navigate('EndScreen');
+        } 
+    }, [timeOut, noAmmo]);
 
     return (
         <View style={styles.container}>

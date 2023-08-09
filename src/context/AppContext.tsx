@@ -1,6 +1,4 @@
 import { createContext, useEffect, useRef, useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
-
 
 import Tests from '../db/Tests';
 import getRandomInt from '../lib/getRandomInt';
@@ -20,6 +18,7 @@ interface AppContextType {
     // roundIsEnded: boolean;
     roundNumber: number;
     que: boolean;
+    noAmmo: boolean;
     currentTest: {
         id: number;
         question: string;
@@ -46,6 +45,7 @@ const initialAppContext: AppContextType = {
     pointsTotal: 0,
     timeRemaining: INITIAL_TIME_REMAINING,
     que: false,
+    noAmmo: false,
     // pointsEarned: 0,
     // roundIsEnded: true,
     roundNumber: 0,
@@ -61,14 +61,13 @@ const initialAppContext: AppContextType = {
     calculatePointsTotal: () => {},
     calculateStreak: () => {},
     testsHandler: () => {},
-    startTimer: () => { },
+    startTimer: () => {},
     signalNewGame: () => {},
 };
 
 const AppContext = createContext<AppContextType>(initialAppContext);
 
 const AppProvider = ({ children }: { children: React.ReactNode }) => {
-    const navigation = useNavigation();
     const [que, setQue] = useState<boolean>(false);
     // const [pointsEarned, setPointsEarned] = useState<number>(0);
     // const [pointsTotal, setPointsTotal] = useState<number>(0);
@@ -79,7 +78,7 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
     const streak = useRef<number>(0);
     // const [roundIsEnded, setRoundIsEnded] = useState<boolean>(false);
     const [roundNumber, setRoundNumber] = useState<number>(1);
-    const [gameNumber, setGameNumber] = useState<number>(0);
+    const gameNumber = useRef<number>(0);
     const [currentTest, setCurrentTest] = useState<
         AppContextType['currentTest']
     >({
@@ -89,10 +88,9 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
         answer: '',
     });
 
-
     const signalNewGame = () => {
-        setGameNumber((previous: number) => previous + 1);
-    }
+        gameNumber.current++;
+    };
 
     // const currentTest = useRef<AppContextType['currentTest']>({
     //     id: -1,
@@ -108,11 +106,19 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     const [timeOut, setTimeOut] = useState<boolean>(false);
+    
 
     const [tests, setTests] = useState<object[]>(Tests);
 
+    const [emptyTests, setEmptyTests] = useState<boolean>(false);
+
+    const [noAmmo, setNoAmmo] = useState<boolean>(false);
+
     const testsHandler = () => {
         try {
+            if (emptyTests) {
+                setNoAmmo(true);
+            }
             let test = tests[getRandomInt(tests.length)];
             let newTests = tests.filter((t: object) => t !== test);
             setTests(newTests);
@@ -122,19 +128,35 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
             clone.options = shuffledArray;
             console.log('chosen: ', clone.answer);
             setCurrentTest(clone);
+            if (newTests.length === 0) {
+                setEmptyTests(true);
+            }
         } catch (error) {
             console.log('Error retrieving or storing items:', error);
         }
     };
 
-    useEffect(() => {
+    const resetProvider = () => {
+        setTests(Tests);
+        setNoAmmo(false);
+        setTimerStarted(false);
+        setEmptyTests(false);
         streak.current = 0;
         pointsTotal.current = 0;
         setTimeRemaining(INITIAL_TIME_REMAINING);
         setRoundNumber(1);
-        setTests(Tests);
         setTimeOut(false);
         setQue(false);
+        // setCurrentTest({
+        //     id: -1,
+        //     question: '',
+        //     options: [],
+        //     answer: '',
+        // });
+    };
+
+    useEffect(() => {
+        resetProvider();
     }, [gameNumber]);
 
     useEffect(() => {
@@ -159,7 +181,7 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
                 clearInterval(timer);
             }
         };
-    }, [timerStarted]);
+    }, [timerStarted, gameNumber]);
 
     const queSetter = () => {
         setQue(true);
@@ -190,7 +212,7 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     const value: AppContextType = {
-        gameNumber,
+        gameNumber: gameNumber.current,
         streak: streak.current,
         // pointsEarned,
         pointsTotal: pointsTotal.current,
@@ -200,13 +222,14 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
         que,
         currentTest,
         timeOut,
+        noAmmo,
         roundEnder,
         queSetter,
         calculatePointsTotal,
         calculateStreak,
         testsHandler,
         startTimer,
-        signalNewGame
+        signalNewGame,
     };
 
     return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
